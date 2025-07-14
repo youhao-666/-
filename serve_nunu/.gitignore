@@ -1,0 +1,5 @@
+storage/logs
+.idea
+*.log
+*.exe
+resource/
