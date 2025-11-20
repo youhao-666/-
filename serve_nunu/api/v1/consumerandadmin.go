@@ -26,3 +26,10 @@ type LoginResponse struct {
 	Avatar   string `json:"avatar"`
 	Token    string `json:"token"`
 }
+
+type UpdateReq struct {
+	Nickname string `json:"nickname"`
+	Avatar   string `json:"avatar"`
+	Account  string `json:"account"`
+	Password string `json:"password"`
+}

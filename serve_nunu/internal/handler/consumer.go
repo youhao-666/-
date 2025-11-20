@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	v1 "server_go/api/v1"
@@ -32,13 +31,15 @@ func (h *ConsumerHandler) GetConsumer(ctx *gin.Context) {
 }
 
 func (h *ConsumerHandler) CreateUser(ctx *gin.Context) {
-	data := ctx.PostForm("data") // 获取前端传来的data参数
+
 	//var user model.Consumer
 	var user v1.CreateUserRequest
-	if err := json.Unmarshal([]byte(data), &user); err != nil { // 反序列化data参数到stu变量
+
+	if err := ctx.ShouldBindJSON(&user); err != nil {
 		v1.HandleError(ctx, http.StatusBadRequest, err, nil)
 		return
 	}
+
 	if user.Account == "" || user.Password == "" || user.Nickname == "" {
 		v1.HandleError(ctx, http.StatusBadRequest, fmt.Errorf("account, password and nickname are required"), nil)
 		return
@@ -102,10 +103,8 @@ func (h *ConsumerHandler) ResetPassword(ctx *gin.Context) {
 
 func (h *ConsumerHandler) Login(ctx *gin.Context) {
 
-	data := ctx.PostForm("data") // 获取前端传来的data参数
-
 	var consumer v1.LoginRequest
-	if err := json.Unmarshal([]byte(data), &consumer); err != nil { // 反序列化data参数到stu变量
+	if err := ctx.ShouldBindJSON(&consumer); err != nil {
 		v1.HandleError(ctx, http.StatusBadRequest, err, nil)
 		return
 	}
@@ -134,19 +133,21 @@ func (h *ConsumerHandler) UpdateConsumer(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, _ := strconv.Atoi(idStr)
 	fmt.Println(id)
-	data := ctx.PostForm("data") // 获取前端传来的data参数
-	var user model.Consumer
 
-	if err := json.Unmarshal([]byte(data), &user); err != nil { // 反序列化data参数到stu变量
-		v1.HandleError(ctx, http.StatusBadRequest, err, nil)
+	var req v1.UpdateReq
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		v1.HandleError(ctx, http.StatusInternalServerError, err, nil)
 		return
 	}
-	// //user.ID = uint(id)
-	// if user.ID != uint(id) {
-	// 	v1.HandleError(ctx, http.StatusBadRequest, fmt.Errorf("id不正确"), nil)
-	// 	return
-	// }
-	//fmt.Println(id)
+
+	user := model.Consumer{
+		Account:  req.Account,
+		Password: req.Password,
+		Nickname: req.Nickname,
+		Avatar:   req.Avatar,
+	}
+
 	user.ID = uint(id)
 	user.User_type = 1 // 这里假设用户类型为1
 	err := h.consumerService.UpdateConsumer(ctx, &user)

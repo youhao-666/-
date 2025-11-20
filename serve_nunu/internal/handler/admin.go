@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"net/http"
 	v1 "server_go/api/v1"
 	"server_go/internal/model"
@@ -26,9 +25,8 @@ func NewAdminHandler(
 }
 
 func (h *AdminHandler) CreateAdmin(ctx *gin.Context) {
-	data := ctx.PostForm("data") // 获取前端传来的data参数
 	var user model.Admin
-	if err := json.Unmarshal([]byte(data), &user); err != nil { // 反序列化data参数到stu变量
+	if err := ctx.ShouldBindJSON(&user); err != nil {
 		v1.HandleError(ctx, http.StatusBadRequest, err, nil)
 		return
 	}
@@ -43,13 +41,14 @@ func (h *AdminHandler) CreateAdmin(ctx *gin.Context) {
 }
 
 func (h *AdminHandler) Login(ctx *gin.Context) {
-	data := ctx.PostForm("data") // 获取前端传来的data参数
 
 	var userr v1.LoginRequest
-	if err := json.Unmarshal([]byte(data), &userr); err != nil { // 反序列化data参数到stu变量
+
+	if err := ctx.ShouldBindJSON(&userr); err != nil {
 		v1.HandleError(ctx, http.StatusBadRequest, err, nil)
 		return
 	}
+
 	user := model.Admin{
 		Account:  userr.Account,
 		Password: userr.Password,

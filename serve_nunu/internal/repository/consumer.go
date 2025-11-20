@@ -43,7 +43,7 @@ func (r *consumerRepository) GetConsumer(ctx context.Context, id int64) (*model.
 }
 
 func (r *consumerRepository) CreateConsumer(ctx context.Context, consumer *model.Consumer) error {
-	if err := r.db.Table("user").Create(consumer).Error; err != nil {
+	if err := r.DB(ctx).Table("user").Create(consumer).Error; err != nil {
 		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
 			if mysqlErr.Number == 1062 {
 				return v1.ErrUserAlreadyUse
@@ -99,12 +99,7 @@ func (r *consumerRepository) CheckAccount(ctx context.Context, account string) (
 
 func (r *consumerRepository) UpdateConsumer(ctx context.Context, consumer *model.Consumer) error {
 	if err := r.db.Table("user").Where("id = ?", consumer.ID).Updates(consumer).Error; err != nil {
-		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
-			if mysqlErr.Number == 1062 {
-				return v1.ErrAccountAlreadyUse
-			}
-			return err
-		}
+		return err
 	}
 	return nil
 }

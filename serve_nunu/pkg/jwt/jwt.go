@@ -58,6 +58,7 @@ func (j *JWT) ParseToken(tokenString string) (*MyCustomClaims, error) {
 		return nil, err
 	}
 	if claims, ok := token.Claims.(*MyCustomClaims); ok && token.Valid {
+		//fmt.Println("解析出的Claims: UserId=%d, User_type=%d\n", claims.UserId, claims.User_type)
 		return claims, nil
 	} else {
 		return nil, err

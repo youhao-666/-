@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	v1 "server_go/api/v1"
@@ -31,13 +30,17 @@ func (h *ArticleHandler) GetArticle(ctx *gin.Context) {
 }
 
 func (h *ArticleHandler) CreateArticle(ctx *gin.Context) {
-	data := ctx.PostForm("data") // 获取前端传来的data参数
 	var articleWithTags v1.ArticleWithTags
-	if err := json.Unmarshal([]byte(data), &articleWithTags); err != nil { // 反序列化data参数到stu变量
+	if err := ctx.BindJSON(&articleWithTags); err != nil {
 		v1.HandleError(ctx, http.StatusBadRequest, err, nil)
 		return
 	}
-	if articleWithTags.Title == "" || articleWithTags.Content == "" || articleWithTags.UserId <= 0 {
+
+	articleWithTags.UserId = GetUserIdFromCtx(ctx)
+
+	fmt.Println(articleWithTags.UserId)
+
+	if articleWithTags.Title == "" || articleWithTags.Content == "" {
 		v1.HandleError(ctx, http.StatusBadRequest, fmt.Errorf("title, content, userId不能为空"), nil)
 		return
 	}

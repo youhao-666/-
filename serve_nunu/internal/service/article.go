@@ -6,6 +6,8 @@ import (
 	v1 "server_go/api/v1"
 	"server_go/internal/model"
 	"server_go/internal/repository"
+
+	"gorm.io/gorm"
 )
 
 type ArticleService interface {
@@ -20,16 +22,19 @@ type ArticleService interface {
 func NewArticleService(
 	service *Service,
 	articleRepository repository.ArticleRepository,
+	tagRepository repository.TagRepository,
 ) ArticleService {
 	return &articleService{
 		Service:           service,
 		articleRepository: articleRepository,
+		tagRepository:     tagRepository,
 	}
 }
 
 type articleService struct {
 	*Service
 	articleRepository repository.ArticleRepository
+	tagRepository     repository.TagRepository
 }
 
 func (s *articleService) GetArticle(ctx context.Context, id int64) (*model.Article, error) {
@@ -81,13 +86,10 @@ func (s *articleService) GetArticle(ctx context.Context, id int64) (*model.Artic
 func (s *articleService) CreateArticle(ctx context.Context, articleWithTags *v1.ArticleWithTags) error {
 	return s.tm.Transaction(ctx, func(ctx context.Context) error {
 
-		//  处理标签
-		for _, tagName := range articleWithTags.Tags {
-
-			tag := &model.Tag{TagName: tagName}
-			_, err := s.getOrCreateTag(ctx, tag)
-			if err != nil {
-				return err
+		//  检查标签
+		for _, tagId := range articleWithTags.Tags {
+			if err := s.tagRepository.GetTag(ctx, &model.Tag{Model: gorm.Model{ID: uint(tagId)}}); err != nil {
+				return v1.ErrTagNntFound
 			}
 		}
 
@@ -104,17 +106,12 @@ func (s *articleService) CreateArticle(ctx context.Context, articleWithTags *v1.
 		}
 
 		//  处理标签
-		for _, tagName := range articleWithTags.Tags {
-
-			tag := &model.Tag{TagName: tagName}
-			tagID, err := s.getOrCreateTag(ctx, tag)
+		for _, tagId := range articleWithTags.Tags {
+			err := s.safeCreateArticleTag(ctx, articleID, uint(tagId))
 			if err != nil {
 				return err
 			}
 
-			if err := s.safeCreateArticleTag(ctx, articleID, tagID); err != nil {
-				return err
-			}
 		}
 		return nil
 	})
@@ -159,7 +156,7 @@ func (s *articleService) QueryArticleByTag(ctx context.Context, tagID uint) ([]*
 
 func (s *articleService) QueryOneArticle(ctx context.Context, id uint) (*v1.ArticleWithTags, error) {
 
-	Tags, err := s.articleRepository.QueryTagByArticleID(ctx, id)
+	_, err := s.articleRepository.QueryTagByArticleID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -172,11 +169,11 @@ func (s *articleService) QueryOneArticle(ctx context.Context, id uint) (*v1.Arti
 		Title:   artical.Title,
 		Content: artical.Content,
 		UserId:  artical.UserId,
-		Tags:    make([]string, len(Tags)),
+		//Tags:    make([]string, len(Tags)),
 	}
-	for i, tag := range Tags {
-		articleWithTags.Tags[i] = tag.TagName
-	}
+	// for i, tag := range Tags {
+	// 	articleWithTags.Tags[i] = tag.TagName
+	// }
 	return &articleWithTags, nil
 }
 

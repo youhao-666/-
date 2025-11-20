@@ -41,8 +41,9 @@ func NewHTTPServer(
 	userGroup := s.Group("/user")
 	{
 		userGroup.Use(middleware.StrictAuth(jwt, logger))
-		userGroup.POST("/register", userHandler.Register)
+		//userGroup.POST("/register", userHandler.Register)
 		userGroup.PUT("/update/:id", consumerHandler.UpdateConsumer)
+		userGroup.POST("/article/create", articles.CreateArticle)
 	}
 
 	// 管理员相关路由分组
@@ -52,7 +53,7 @@ func NewHTTPServer(
 	{
 		adminGroup.Use(middleware.StrictAuth(jwt, logger))
 		//用户管理
-		adminGroup.PUT("/Reset/:id", consumerHandler.ResetPassword)
+		adminGroup.PUT("/reset/:id", consumerHandler.ResetPassword)
 		adminGroup.GET("/user/list", consumerHandler.QueryAllConsumer)
 		adminGroup.DELETE("/delete/:id", consumerHandler.DeleteConsumer)
 		//标签管理
@@ -61,16 +62,14 @@ func NewHTTPServer(
 		//文章管理
 		adminGroup.DELETE("/article/delete/:id", articles.DeleteArticle)
 	}
-	s.POST("/article/create", articles.CreateArticle)
+
 	s.GET("/tag/list", tags.QueryAllTag)
 	s.GET("/user/:id", consumerHandler.QueryConsumerById)
 
 	article := s.Group("/article")
 	{
-		//文章查询
-		//article.Use(middleware.StrictAuth(jwt, logger))
 		article.GET("/listByTag/:tag_id", articles.QueryArticleByTag)
-		article.GET("/quaryall", articles.QueryAllArticle)
+		article.GET("/all", articles.QueryAllArticle)
 		article.GET("/listByUser/:user_id", articles.QueryArticleByUserID)
 	}
 

@@ -19,25 +19,25 @@ func NewHandler(
 	}
 }
 
-// func GetUserIdFromCtx(ctx *gin.Context) uint {
-// 	v, exists := ctx.Get("claims")
-// 	if !exists {
-// 		return 0
-// 	}
-// 	return v.(*jwt.MyCustomClaims).UserId
-// }
-
 func GetUserIdFromCtx(ctx *gin.Context) uint {
 	v, exists := ctx.Get("claims")
 	if !exists {
 		return 0
 	}
-	claims, ok := v.(*jwt.MyCustomClaims)
-	if !ok {
-		return 0
-	}
-	return claims.UserId
+	return v.(*jwt.MyCustomClaims).UserId
 }
+
+// func GetUserIdFromCtx(ctx *gin.Context) uint {
+// 	v, exists := ctx.Get("claims")
+// 	if !exists {
+// 		return 0
+// 	}
+// 	claims, ok := v.(*jwt.MyCustomClaims)
+// 	if !ok {
+// 		return 0
+// 	}
+// 	return claims.UserId
+// }
 
 func GetUserTypeFromCtx(ctx *gin.Context) int {
 	v, exists := ctx.Get("claims")
