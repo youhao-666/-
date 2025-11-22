@@ -8,7 +8,7 @@ import (
 )
 
 type TagService interface {
-	CreateTag(ctx context.Context, tag *model.Tag) error
+	CreateTag(ctx context.Context, tag *v1.TagCreate) error
 	QueryAllTag(ctx context.Context) ([]*model.Tag, error)
 	DeleteTag(ctx context.Context, tagid uint) error
 }
@@ -28,11 +28,11 @@ type tagService struct {
 	tagRepository repository.TagRepository
 }
 
-func (s *tagService) CreateTag(ctx context.Context, tag *model.Tag) error {
-	if err := s.tagRepository.GetTag(ctx, tag); err == nil {
+func (s *tagService) CreateTag(ctx context.Context, tag *v1.TagCreate) error {
+	if err := s.tagRepository.GetTag(ctx, &model.Tag{TagName: tag.TagName}); err == nil {
 		return v1.ErrTagDefinded
 	}
-	return s.tagRepository.CreateTag(ctx, tag)
+	return s.tagRepository.CreateTag(ctx, &model.Tag{TagName: tag.TagName})
 }
 
 func (s *tagService) QueryAllTag(ctx context.Context) ([]*model.Tag, error) {

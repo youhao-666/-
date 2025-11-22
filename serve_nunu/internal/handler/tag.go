@@ -1,11 +1,9 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	v1 "server_go/api/v1"
-	"server_go/internal/model"
 	"server_go/internal/service"
 	"strconv"
 
@@ -33,9 +31,9 @@ func (h *TagHandler) CreateTag(ctx *gin.Context) {
 		v1.HandleError(ctx, http.StatusBadRequest, fmt.Errorf("用户类型不正确"), nil)
 		return
 	}
-	data := ctx.PostForm("data") // 获取前端传来的data参数
-	var tag model.Tag
-	if err := json.Unmarshal([]byte(data), &tag); err != nil { // 反序列化data参数到stu变量
+
+	var tag v1.TagCreate
+	if err := ctx.ShouldBindJSON(&tag); err != nil {
 		v1.HandleError(ctx, http.StatusBadRequest, err, nil)
 		return
 	}

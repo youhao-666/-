@@ -8,3 +8,7 @@ type Tag struct {
 type Tags struct {
 	Tags []Tag `json:"tags"`
 }
+
+type TagCreate struct {
+	TagName string `json:"tagName"`
+}
